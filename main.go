@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,6 +19,7 @@ func (ori *result) append(wd string) {
 //Just run "Go install"
 func runInstall(wd string) {
 	os.Chdir(wd)
+	log.Println("Current make install in ", wd)
 	cmd := exec.Command("go", "install")
 	cmd.Run()
 }
