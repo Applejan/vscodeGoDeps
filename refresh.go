@@ -13,7 +13,7 @@ type body struct {
 	toDir string
 }
 
-func (s *body) downTOOLS() {
+func (s *body) download() {
 	tmp := strings.Split(s.toDir, "/")
 	tmp = tmp[1:]
 	// log.Println(tmQp)
@@ -29,5 +29,5 @@ func main() {
 		url:   "https://github.com/golang/tools",
 		toDir: "$GOPATH/src/golang.org/x/tools",
 	}
-	tools.downTOOLS()
+	tools.download()
 }
