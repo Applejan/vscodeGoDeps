@@ -1,60 +1,50 @@
 package main
 
 import (
-	"io/ioutil"
-	"log"
+	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"strings"
 )
 
-type result struct {
-	dir []string
+//g save the url and the target dir
+type g struct {
+	url   string
+	toDir string
 }
 
-func (ori *result) append(wd string) {
-	ori.dir = append(ori.dir, wd)
-}
+func download(content []g) {
 
-//Just run "Go install"
-func runInstall(wd string) {
-	os.Chdir(wd)
-	log.Println("Current make install in ", wd)
-	cmd := exec.Command("go", "install")
-	cmd.Run()
-}
+	for _, v := range content {
+		tmp := strings.Split(v.toDir, "/")
+		tmp[0] = os.Getenv("GOPATH")
+		targetDir := strings.Join(tmp, string(os.PathSeparator))
+		os.Chdir(targetDir)
+		cmd := exec.Command("git", "pull")
+		ret, _ := cmd.Output()
 
-//Confirm if the dir need to run "Go install"
-func containGo(wd string) (flag bool) {
-	r, _ := ioutil.ReadDir(wd)
-	for _, subItems := range r {
-		if filepath.Ext(subItems.Name()) == ".go" {
-			return true
-		}
-	}
-	return false
-}
-
-//Find the dir needed to run "Go install"
-func findDir(rootPath string, directiories *result) {
-	var path string
-	r, _ := ioutil.ReadDir(rootPath)
-	if containGo(rootPath) {
-		directiories.append(rootPath)
-	} else {
-		for _, i := range r {
-			path = rootPath + i.Name() + "\\"
-			findDir(path, directiories)
-		}
+		fmt.Printf("Current work in %v \n", targetDir)
+		fmt.Println(string(ret))
 	}
 
 }
 func main() {
-	gopath := os.Getenv("GOPATH")
-	rootpath := gopath + "\\src\\golang.org\\x\\"
-	var directiories result //The needed directiories
-	findDir(rootpath, &directiories)
-	for _, dir := range directiories.dir {
-		runInstall(dir)
+	//Need to update files
+	tools := g{
+		url:   "https://github.com/golang/tools",
+		toDir: "$GOPATH/src/golang.org/x/tools",
 	}
+	sys := g{
+		url:   "https://github.com/golang/sys",
+		toDir: "$GOPATH/src/golang.org/x/sys",
+	}
+
+	net := g{
+		url:   "https://github.com/golang/net",
+		toDir: "$GOPATH/src/golang.org/x/net",
+	}
+
+	content := []g{tools, sys, net}
+	download(content)
+	makeinstall()
 }
